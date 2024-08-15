@@ -10,13 +10,22 @@ import (
 	"github.com/nishanth-thoughtclan/student-api/utils"
 )
 
+// AuthHandler handles user authentication
+// @Summary Authenticate user
+// @Description Authenticates a user and returns a token
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param authRequest body AuthRequest true "User credentials"
+// @Success 200 {object} AuthResponse
+// @Failure 400 {object} ErrorResponse
+// @Router /auth [post]
 func AuthHandler(cfg *config.Config, authService *services.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var user models.User
 		json.NewDecoder(r.Body).Decode(&user)
-
 		if authService.ValidateUser(user) {
-			token, err := utils.GenerateFirebaseToken(user.ID)
+			token, err := utils.GenerateToken(user.ID)
 			if err != nil {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -13,10 +14,19 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// GetStudentsHandler retrieves all students
+// @Summary Get all students
+// @Description Retrieves a list of all students
+// @Tags Students
+// @Produce json
+// @Success 200 {array} Student
+// @Failure 401 {object} ErrorResponse
+// @Router /students [get]
 func GetStudentsHandler(service *services.StudentService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		students, err := service.GetAllStudents()
 		if err != nil {
+			fmt.Println(err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
@@ -41,8 +51,8 @@ func CreateStudentHandler(service *services.StudentService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var student models.Student
 		json.NewDecoder(r.Body).Decode(&student)
-		claims, _ := utils.ValidateFirebaseToken(r.Header.Get("Authorization"))
-		student.CreatedBy = claims.UID
+		claims, _ := utils.ValidateJWTToken(r.Header.Get("Authorization"))
+		student.CreatedBy = claims["sub"].(string)
 		student.CreatedOn = time.Now()
 		err := service.CreateStudent(student)
 		if err != nil {
@@ -59,8 +69,8 @@ func UpdateStudentHandler(service *services.StudentService) http.HandlerFunc {
 		id := vars["id"]
 		var student models.Student
 		json.NewDecoder(r.Body).Decode(&student)
-		claims, _ := utils.ValidateFirebaseToken(r.Header.Get("Authorization"))
-		student.UpdatedBy = claims.UID
+		claims, _ := utils.ValidateJWTToken(r.Header.Get("Authorization"))
+		student.CreatedBy = claims["sub"].(string)
 		student.UpdatedOn = time.Now()
 		err := service.UpdateStudent(id, student)
 		if err != nil {
