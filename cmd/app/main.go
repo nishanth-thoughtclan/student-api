@@ -33,6 +33,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.Use(middleware.LoggingMiddleware)
+	r.Use(middleware.JSONMiddleware)
 	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 	r.HandleFunc("/auth", handlers.AuthHandler(cfg, authService)).Methods("POST")
 	r.Handle("/students", middleware.JWTAuthMiddleware(http.HandlerFunc(handlers.GetStudentsHandler(studentService)))).Methods("GET")

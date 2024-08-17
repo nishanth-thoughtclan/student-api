@@ -8,11 +8,11 @@ import (
 )
 
 type Config struct {
-	DBUser         string
-	DBPassword     string
-	DBName         string
-	DBHost         string
-	FirebaseAPIKey string
+	DBUser       string
+	DBPassword   string
+	DBName       string
+	DBHost       string
+	JWTSecretKey string
 }
 
 func LoadConfig() *Config {
@@ -23,10 +23,10 @@ func LoadConfig() *Config {
 	}
 
 	return &Config{
-		DBUser:         os.Getenv("DB_USER"),
-		DBPassword:     os.Getenv("DB_PASSWORD"),
-		DBName:         os.Getenv("DB_NAME"),
-		DBHost:         os.Getenv("DB_HOST"),
-		FirebaseAPIKey: os.Getenv("FIREBASE_API_KEY"),
+		DBUser:       os.Getenv("DB_USER"),
+		DBPassword:   os.Getenv("DB_PASSWORD"),
+		DBName:       os.Getenv("DB_NAME"),
+		DBHost:       os.Getenv("DB_HOST"),
+		JWTSecretKey: os.Getenv("JWT_SECRET_KEY"),
 	}
 }

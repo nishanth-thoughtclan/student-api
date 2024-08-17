@@ -2,17 +2,24 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"time"
 
-	"github.com/nishanth-thoughtclan/student-api/api/services"
-	"github.com/nishanth-thoughtclan/student-api/utils"
-
-	"github.com/nishanth-thoughtclan/student-api/api/models"
-
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
+	"github.com/nishanth-thoughtclan/student-api/api/models"
+	"github.com/nishanth-thoughtclan/student-api/api/services"
 )
+
+// Add or Update Student Request type
+type StudentRequest struct {
+	Name string `json:"name" validate:"required"`
+	Age  int    `json:"age" validate:"required"`
+}
+
+// Response objecgi
+type Response struct {
+	Message string `json:"message"`
+}
 
 // GetStudentsHandler retrieves all students
 // @Summary Get all students
@@ -24,9 +31,8 @@ import (
 // @Router /students [get]
 func GetStudentsHandler(service *services.StudentService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		students, err := service.GetAllStudents()
+		students, err := service.GetAllStudents(r.Context())
 		if err != nil {
-			fmt.Println(err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
@@ -38,7 +44,7 @@ func GetStudentByIDHandler(service *services.StudentService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id := vars["id"]
-		student, err := service.GetStudentByID(id)
+		student, err := service.GetStudentByID(r.Context(), id)
 		if err != nil {
 			http.Error(w, "Student not found", http.StatusNotFound)
 			return
@@ -49,17 +55,29 @@ func GetStudentByIDHandler(service *services.StudentService) http.HandlerFunc {
 
 func CreateStudentHandler(service *services.StudentService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var student models.Student
-		json.NewDecoder(r.Body).Decode(&student)
-		claims, _ := utils.ValidateJWTToken(r.Header.Get("Authorization"))
-		student.CreatedBy = claims["sub"].(string)
-		student.CreatedOn = time.Now()
-		err := service.CreateStudent(student)
-		if err != nil {
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		var studentReq StudentRequest
+		if err := json.NewDecoder(r.Body).Decode(&studentReq); err != nil {
 			return
 		}
+
+		validate := validator.New()
+		err := validate.Struct(studentReq)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		student := studentFromAddStudentRequest(studentReq)
+
+		updatedStudent, saveErr := service.CreateStudent(r.Context(), student)
+		if saveErr != nil {
+			http.Error(w, "something went wrong", http.StatusInternalServerError)
+		}
 		w.WriteHeader(http.StatusCreated)
+
+		if err := json.NewEncoder(w).Encode(updatedStudent); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		}
 	}
 }
 
@@ -67,17 +85,33 @@ func UpdateStudentHandler(service *services.StudentService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id := vars["id"]
-		var student models.Student
-		json.NewDecoder(r.Body).Decode(&student)
-		claims, _ := utils.ValidateJWTToken(r.Header.Get("Authorization"))
-		student.CreatedBy = claims["sub"].(string)
-		student.UpdatedOn = time.Now()
-		err := service.UpdateStudent(id, student)
-		if err != nil {
-			http.Error(w, "Student not found", http.StatusNotFound)
+		var studentReq StudentRequest
+		if err := json.NewDecoder(r.Body).Decode(&studentReq); err != nil {
 			return
 		}
+
+		validate := validator.New()
+		err := validate.Struct(studentReq)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		student := studentFromAddStudentRequest(studentReq)
+		updatedStudent, updateErr := service.UpdateStudent(r.Context(), id, student)
+		if updateErr != nil {
+			if updateErr.Error() == "student not found" {
+				http.Error(w, updateErr.Error(), http.StatusNotFound)
+			} else {
+				http.Error(w, updateErr.Error(), http.StatusForbidden)
+			}
+			return
+		}
+
 		w.WriteHeader(http.StatusOK)
+
+		if err := json.NewEncoder(w).Encode(updatedStudent); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		}
 	}
 }
 
@@ -85,11 +119,24 @@ func DeleteStudentHandler(service *services.StudentService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id := vars["id"]
-		err := service.DeleteStudent(id)
+		err := service.DeleteStudent(r.Context(), id)
 		if err != nil {
-			http.Error(w, "Student not found", http.StatusNotFound)
+			if err.Error() == "student not found" {
+				http.Error(w, err.Error(), http.StatusNotFound)
+			} else {
+				http.Error(w, err.Error(), http.StatusForbidden)
+			}
 			return
 		}
-		w.WriteHeader(http.StatusNoContent)
+		if err := json.NewEncoder(w).Encode(Response{Message: "Successfully Deleted"}); err != nil {
+			panic(err)
+		}
+	}
+}
+
+func studentFromAddStudentRequest(r StudentRequest) models.Student {
+	return models.Student{
+		Name: r.Name,
+		Age:  r.Age,
 	}
 }

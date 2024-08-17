@@ -23,16 +23,34 @@ import (
 func AuthHandler(cfg *config.Config, authService *services.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var user models.User
-		json.NewDecoder(r.Body).Decode(&user)
-		if authService.ValidateUser(user) {
-			token, err := utils.GenerateToken(user.ID)
-			if err != nil {
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-			json.NewEncoder(w).Encode(map[string]string{"token": token})
-		} else {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		// Decode the incoming user data
+		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
 		}
+
+		// Validate the user credentials
+		validUser, err := authService.ValidateUser(user.Email, user.Password)
+		if err != nil || !validUser {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Retrieve the user's ID
+		userID, err := authService.GetUserIDByEmail(user.Email)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		// Generate a JWT token with the user ID as the subject
+		token, err := utils.GenerateToken(userID.String())
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		// Return the token to the client
+		json.NewEncoder(w).Encode(map[string]string{"token": token})
 	}
 }

@@ -1,13 +1,17 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	uuid "github.com/google/uuid"
+)
 
 type Student struct {
-	ID        string    `json:"id"`
+	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
 	Age       int       `json:"age"`
-	CreatedBy string    `json:"created_by"`
+	CreatedBy uuid.UUID `json:"created_by"`
 	CreatedOn time.Time `json:"created_on"`
-	UpdatedBy string    `json:"updated_by"`
+	UpdatedBy uuid.UUID `json:"updated_by"`
 	UpdatedOn time.Time `json:"updated_on"`
 }

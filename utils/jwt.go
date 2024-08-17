@@ -5,33 +5,30 @@ import (
 	"strings"
 	"time"
 
+	"github.com/nishanth-thoughtclan/student-api/config"
+
 	"github.com/dgrijalva/jwt-go"
 )
 
-// Secret key used for signing the tokens (should be securely managed)
-var secretKey = []byte("secret")
-
-// GenerateToken generates a JWT token
 func GenerateToken(userID string) (string, error) {
-	// Create a new token with claims
+	cfg := config.LoadConfig()
+	var secretKey = []byte(cfg.JWTSecretKey)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": userID,
-		"exp": time.Now().Add(time.Hour * 1).Unix(), // Token expires in 1 hour
+		"exp": time.Now().Add(time.Hour * 1).Unix(),
 	})
-
-	// Sign the token with the secret key
 	return token.SignedString(secretKey)
 }
 
-// ValidateJWTToken validates the JWT token and returns claims
 func ValidateJWTToken(tokenString string) (jwt.MapClaims, error) {
+	cfg := config.LoadConfig()
+	var secretKey = []byte(cfg.JWTSecretKey)
 	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
 	if tokenString == "" {
 		return nil, errors.New("empty token")
 	}
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// Ensure the token's signing method matches the one used
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid signing method")
 		}

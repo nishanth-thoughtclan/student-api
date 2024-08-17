@@ -16,14 +16,14 @@ func JWTAuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		token, err := utils.ValidateJWTToken(authHeader)
+		claims, err := utils.ValidateJWTToken(authHeader)
 		if err != nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		// Attach claims to context
-		ctx := context.WithValue(r.Context(), "claims", token)
+		userID := claims["sub"].(string)
+		ctx := context.WithValue(r.Context(), "userID", userID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
