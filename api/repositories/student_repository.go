@@ -8,6 +8,8 @@ import (
 	"github.com/nishanth-thoughtclan/student-api/api/models"
 )
 
+var dateTimeFormat string = "2006-01-02 15:04:05"
+
 type StudentRepository struct {
 	db *sql.DB
 }
@@ -34,11 +36,11 @@ func (repo *StudentRepository) GetAll() ([]models.Student, error) {
 		}
 
 		// Parsing the time values from the database using a format
-		student.CreatedOn, err = time.Parse("2006-01-02 15:04:05", createdOn)
+		student.CreatedOn, err = time.Parse(dateTimeFormat, createdOn)
 		if err != nil {
 			return nil, err
 		}
-		student.UpdatedOn, err = time.Parse("2006-01-02 15:04:05", updatedOn)
+		student.UpdatedOn, err = time.Parse(dateTimeFormat, updatedOn)
 		if err != nil {
 			return nil, err
 		}
@@ -60,11 +62,11 @@ func (repo *StudentRepository) GetByID(ctx context.Context, id string) (*models.
 	}
 
 	// Parse the string dates into time.Time
-	student.CreatedOn, err = time.Parse("2006-01-02 15:04:05", createdOn)
+	student.CreatedOn, err = time.Parse(dateTimeFormat, createdOn)
 	if err != nil {
 		return nil, err
 	}
-	student.UpdatedOn, err = time.Parse("2006-01-02 15:04:05", updatedOn)
+	student.UpdatedOn, err = time.Parse(dateTimeFormat, updatedOn)
 	if err != nil {
 		return nil, err
 	}

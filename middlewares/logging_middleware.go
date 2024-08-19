@@ -1,4 +1,4 @@
-package middleware
+package middlewares
 
 import (
 	"log"
@@ -6,8 +6,10 @@ import (
 	"os"
 )
 
+const filePerms = 0666
+
 var (
-	logFile, _ = os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	logFile, _ = os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, filePerms)
 	logger     = log.New(logFile, "", log.LstdFlags)
 )
 

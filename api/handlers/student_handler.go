@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -33,10 +34,15 @@ func GetStudentsHandler(service *services.StudentService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		students, err := service.GetAllStudents(r.Context())
 		if err != nil {
+			fmt.Println(err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
-		json.NewEncoder(w).Encode(students)
+		if len(students) == 0 {
+			json.NewEncoder(w).Encode([]models.Student{})
+		} else {
+			json.NewEncoder(w).Encode(students)
+		}
 	}
 }
 
