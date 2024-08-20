@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"time"
 
 	"github.com/nishanth-thoughtclan/student-api/api/handlers"
 	"github.com/nishanth-thoughtclan/student-api/api/repositories"
@@ -36,6 +39,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not connect to the database: %v", err)
 	}
+	defer db.Close()
 
 	studentRepo := repositories.NewStudentRepository(db)
 	userRepo := repositories.NewUserRepository(db)
@@ -49,11 +53,35 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	if err := http.ListenAndServe(":"+port, router); err != nil {
-		log.Printf("Could not start server: %s", err)
+
+	server := &http.Server{
+		Addr:         ":" + port,
+		WriteTimeout: time.Second * 15,
+		ReadTimeout:  time.Second * 15,
+		IdleTimeout:  time.Second * 60,
+		Handler:      router,
 	}
+
+	// gracefully handle server shutdown
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Could not start server: %s", err)
+		}
+	}()
 	log.Printf("Server started on port %s", port)
-	defer db.Close()
+
+	// wait for interrupt signal to gracefully shut down the server
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	<-c
+
+	// a deadline to wait for server shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		log.Fatalf("Server Shutdown Failed:%+v", err)
+	}
+	log.Println("Server exited properly")
 }
 
 func registerRoutesAndMiddlewares(router *mux.Router, db *sql.DB, authService *services.AuthService, studentService *services.StudentService) {
