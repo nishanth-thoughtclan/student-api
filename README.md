@@ -9,3 +9,7 @@ go get -u github.com/swaggo/files
 
 ### Swagger Docs Url
 http://localhost:8080/swagger/index.html
+
+### Postman Collection Dump
+provided the postman api dump with the examples [Link to file](./student-api.postman_collection.json)
+ 

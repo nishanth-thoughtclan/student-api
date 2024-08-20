@@ -13,7 +13,6 @@ import (
 	"github.com/nishanth-thoughtclan/student-api/api/repositories"
 	"github.com/nishanth-thoughtclan/student-api/api/services"
 	"github.com/nishanth-thoughtclan/student-api/config"
-	"github.com/nishanth-thoughtclan/student-api/middlewares"
 	middleware "github.com/nishanth-thoughtclan/student-api/middlewares"
 	httpSwagger "github.com/swaggo/http-swagger"
 
@@ -104,7 +103,7 @@ func main() {
 }
 
 func registerRoutesAndMiddlewares(router *mux.Router, db *sql.DB, authService *services.AuthService, studentService *services.StudentService) {
-	router.Use(middlewares.LoggingMiddleware)
+	router.Use(middleware.LoggingMiddleware)
 	router.Use(middleware.JSONMiddleware)
 	router.HandleFunc("/health", handlers.ServiceHealthCheck).Methods("GET")
 	router.HandleFunc("/ready", handlers.PingHandler(db)).Methods("GET")
