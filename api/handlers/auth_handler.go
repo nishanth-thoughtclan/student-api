@@ -20,16 +20,17 @@ type UserResponse struct {
 	Email string `json:"email"`
 }
 
-// AuthHandler handles user authentication
-// @Summary Authenticate user
-// @Description Authenticates a user and returns a token
-// @Tags Auth
-// @Accept json
-// @Produce json
-// @Param authRequest body AuthRequest true "User credentials"
-// @Success 200 {object} AuthResponse
-// @Failure 400 {object} ErrorResponse
-// @Router /auth [post]
+// AuthHandler godoc
+// @Summary      User login
+// @Description  Endpoint for user login
+// @Tags         Users
+// @Accept       json
+// @Produce      json
+// @Param        credentials  body      UserRequest  true  "Login credentials"
+// @Success      200          {object}  UserResponse
+// @Failure      400          {object}  UserResponse
+// @Failure      401          {object}  UserResponse
+// @Router       /api/v1/users/login [post]
 func AuthHandler(authService *services.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var userRequest UserRequest
@@ -72,6 +73,17 @@ func AuthHandler(authService *services.AuthService) http.HandlerFunc {
 	}
 }
 
+// SingUpHandler godoc
+// @Summary      Register a new user
+// @Description  Endpoint for user signup
+// @Tags         Users
+// @Accept       json
+// @Produce      json
+// @Param        user  body      UserRequest  true  "User data"
+// @Success      201   {object}  UserResponse
+// @Failure      400   {object}  UserResponse
+// @Failure      500   {object}  UserResponse
+// @Router       /api/v1/users/signup [post]
 func SingUpHandler(authService *services.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var userRequest UserRequest

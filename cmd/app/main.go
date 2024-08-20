@@ -13,14 +13,33 @@ import (
 	"github.com/nishanth-thoughtclan/student-api/api/repositories"
 	"github.com/nishanth-thoughtclan/student-api/api/services"
 	"github.com/nishanth-thoughtclan/student-api/config"
-	_ "github.com/nishanth-thoughtclan/student-api/docs"
 	"github.com/nishanth-thoughtclan/student-api/middlewares"
 	middleware "github.com/nishanth-thoughtclan/student-api/middlewares"
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	_ "github.com/nishanth-thoughtclan/student-api/docs"
 )
+
+// @title           Student API
+// @version         1.0
+// @description     This is a sample server for a Student Management API.
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.url    http://www.swagger.io/support
+// @contact.email  support@swagger.io
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8080
+// @BasePath  /api/v1
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 
 func main() {
 	// Open the log file explicitly
@@ -56,9 +75,9 @@ func main() {
 
 	server := &http.Server{
 		Addr:         ":" + port,
-		WriteTimeout: time.Second * 15,
-		ReadTimeout:  time.Second * 15,
-		IdleTimeout:  time.Second * 60,
+		WriteTimeout: time.Second * 20,
+		ReadTimeout:  time.Second * 20,
+		IdleTimeout:  time.Second * 180,
 		Handler:      router,
 	}
 
@@ -76,7 +95,7 @@ func main() {
 	<-c
 
 	// a deadline to wait for server shutdown
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
 		log.Fatalf("Server Shutdown Failed:%+v", err)

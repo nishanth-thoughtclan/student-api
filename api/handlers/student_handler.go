@@ -22,14 +22,17 @@ type Response struct {
 	Message string `json:"message"`
 }
 
-// GetStudentsHandler retrieves all students
-// @Summary Get all students
-// @Description Retrieves a list of all students
-// @Tags Students
-// @Produce json
-// @Success 200 {array} Student
-// @Failure 401 {object} ErrorResponse
-// @Router /students [get]
+var Str string
+
+// GetStudentsHandler godoc
+// @Summary      Get all students
+// @Description  Retrieves a list of all students
+// @Tags         Students
+// @Produce      json
+// @Success      200  {array}   models.Student
+// @Failure      500  {string}	Str
+// @Router       /api/v1/students [get]
+// @Security     ApiKeyAuth
 func GetStudentsHandler(service *services.StudentService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		students, err := service.GetAllStudents(r.Context())
@@ -45,6 +48,15 @@ func GetStudentsHandler(service *services.StudentService) http.HandlerFunc {
 	}
 }
 
+// GetStudentByIDHandler godoc
+// @Summary      Get student by ID
+// @Description  Retrieves a student by their ID
+// @Tags         Students
+// @Produce      json
+// @Param        id   path      string  true  "Student ID"
+// @Success      200  {object}  models.Student
+// @Router       /api/v1/students/{id} [get]
+// @Security     ApiKeyAuth
 func GetStudentByIDHandler(service *services.StudentService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -59,6 +71,16 @@ func GetStudentByIDHandler(service *services.StudentService) http.HandlerFunc {
 	}
 }
 
+// CreateStudentHandler godoc
+// @Summary      Create a new student
+// @Description  Endpoint for creating a new student
+// @Tags         Students
+// @Accept       json
+// @Produce      json
+// @Param        student  body      StudentRequest  true  "Student data"
+// @Success      201      {object}  StudentRequest
+// @Router       /api/v1/students [post]
+// @Security     ApiKeyAuth
 func CreateStudentHandler(service *services.StudentService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var studentReq StudentRequest
@@ -87,6 +109,17 @@ func CreateStudentHandler(service *services.StudentService) http.HandlerFunc {
 	}
 }
 
+// UpdateStudentHandler godoc
+// @Summary      Update a student
+// @Description  Endpoint for updating student details
+// @Tags         Students
+// @Accept       json
+// @Produce      json
+// @Param        id       path      string         true  "Student ID"
+// @Param        student  body      StudentRequest  true  "Student data"
+// @Success      200      {object}  StudentRequest
+// @Router       /api/v1/students/{id} [put]
+// @Security     ApiKeyAuth
 func UpdateStudentHandler(service *services.StudentService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -121,6 +154,15 @@ func UpdateStudentHandler(service *services.StudentService) http.HandlerFunc {
 	}
 }
 
+// DeleteStudentHandler godoc
+// @Summary      Delete a student
+// @Description  Endpoint for deleting a student by ID
+// @Tags         Students
+// @Produce      json
+// @Param        id  path      string  true  "Student ID"
+// @Success      200	{string} 		Str
+// @Router       /api/v1/students/{id} [delete]
+// @Security     ApiKeyAuth
 func DeleteStudentHandler(service *services.StudentService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
