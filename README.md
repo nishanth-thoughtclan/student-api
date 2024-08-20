@@ -16,3 +16,6 @@ provided the postman api dump with the examples [Link to file](./student-api.pos
 ### Provided MySql Schema & Dump for Testing
 [Link to file](./mysql/create_schema.sql)
 [Link to file](./mysql/student_dump.sql)
+
+### Run the app using Docker
+Hit 'docker-compose up --build' to run the app  
