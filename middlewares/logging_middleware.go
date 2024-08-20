@@ -6,11 +6,11 @@ import (
 	"os"
 )
 
-const filePerms = 0666
+const FilePerms = 0666
 
 var (
-	logFile, _ = os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, filePerms)
-	logger     = log.New(logFile, "", log.LstdFlags)
+	LogFile, _ = os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, FilePerms)
+	Logger     = log.New(LogFile, "", log.LstdFlags)
 )
 
 type responseWriter struct {
@@ -26,12 +26,12 @@ func (rw *responseWriter) WriteHeader(code int) {
 func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rw := &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
-		logger.Printf("REQUEST: %s %s", r.Method, r.RequestURI)
+		Logger.Printf("REQUEST: %s %s", r.Method, r.RequestURI)
 		next.ServeHTTP(rw, r)
 		if rw.statusCode >= 400 {
-			logger.Printf("ERROR: %s %s - Status Code: %d", r.Method, r.RequestURI, rw.statusCode)
+			Logger.Printf("ERROR: %s %s - Status Code: %d", r.Method, r.RequestURI, rw.statusCode)
 		} else {
-			logger.Printf("RESPONSE: %s %s - Status Code: %d", r.Method, r.RequestURI, rw.statusCode)
+			Logger.Printf("RESPONSE: %s %s - Status Code: %d", r.Method, r.RequestURI, rw.statusCode)
 		}
 	})
 }

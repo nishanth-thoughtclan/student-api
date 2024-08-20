@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -34,7 +34,6 @@ func GetStudentsHandler(service *services.StudentService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		students, err := service.GetAllStudents(r.Context())
 		if err != nil {
-			fmt.Println(err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
@@ -52,6 +51,7 @@ func GetStudentByIDHandler(service *services.StudentService) http.HandlerFunc {
 		id := vars["id"]
 		student, err := service.GetStudentByID(r.Context(), id)
 		if err != nil {
+			log.Println(err)
 			http.Error(w, "Student not found", http.StatusNotFound)
 			return
 		}
